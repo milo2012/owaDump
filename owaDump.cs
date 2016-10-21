@@ -96,6 +96,8 @@ namespace test2
 
 		    	char[] separatingChars = {'@'};
 		    	string[] filename = username.Split('@');
+		    	bool passPreReq = true;	
+		    
 		    			  
 				//Set fake timezone to fix issue with Mono on OSX
 				string displayName = "(GMT+06:00) Antartica/Mawson Time";
@@ -126,50 +128,85 @@ namespace test2
 						FindFoldersResults f = service.FindFolders(WellKnownFolderName.MsgFolderRoot,searchFilter,new FolderView(1));
 					}catch(Exception e1){
 						try{
-							service = new ExchangeService(ExchangeVersion.Exchange2013_SP1,mawson);					
-							service.EnableScpLookup = false;
-							service.Credentials = new WebCredentials(username,password);
-							service.AutodiscoverUrl(username,RedirectionUrlValidationCallback);
-							SearchFilter searchFilter = new SearchFilter.IsEqualTo(FolderSchema.DisplayName,"Inbox");
-							FindFoldersResults f = service.FindFolders(WellKnownFolderName.MsgFolderRoot,searchFilter,new FolderView(1));							
-						}catch(Exception e2)
-						{
-							try
+							if(e1.Message.Contains("Microsoft.Exchange.WebServices.Data.ExchangeVersion"))
 							{
-								service = new ExchangeService(ExchangeVersion.Exchange2013,mawson);					
+								service = new ExchangeService(ExchangeVersion.Exchange2013_SP1,mawson);					
 								service.EnableScpLookup = false;
 								service.Credentials = new WebCredentials(username,password);
 								service.AutodiscoverUrl(username,RedirectionUrlValidationCallback);
 								SearchFilter searchFilter = new SearchFilter.IsEqualTo(FolderSchema.DisplayName,"Inbox");
-								FindFoldersResults f = service.FindFolders(WellKnownFolderName.MsgFolderRoot,searchFilter,new FolderView(1));															
-							}catch(Exception e3)
+								FindFoldersResults f = service.FindFolders(WellKnownFolderName.MsgFolderRoot,searchFilter,new FolderView(1));							
+							}
+							else
 							{
-								try
+								passPreReq=false;
+								Console.WriteLine("Incorrect username or password");
+							}							
+						}catch(Exception e2)
+						{
+							try
+							{
+								if(e2.Message.Contains("Microsoft.Exchange.WebServices.Data.ExchangeVersion"))
 								{
-									service = new ExchangeService(ExchangeVersion.Exchange2010_SP2,mawson);
+									service = new ExchangeService(ExchangeVersion.Exchange2013,mawson);					
 									service.EnableScpLookup = false;
 									service.Credentials = new WebCredentials(username,password);
 									service.AutodiscoverUrl(username,RedirectionUrlValidationCallback);
 									SearchFilter searchFilter = new SearchFilter.IsEqualTo(FolderSchema.DisplayName,"Inbox");
-									FindFoldersResults f = service.FindFolders(WellKnownFolderName.MsgFolderRoot,searchFilter,new FolderView(1));																								
+									FindFoldersResults f = service.FindFolders(WellKnownFolderName.MsgFolderRoot,searchFilter,new FolderView(1));															
+								}
+								else
+								{
+									passPreReq=false;
+									Console.WriteLine("Incorrect username or password");
+								}							
+							}catch(Exception e3)
+							{
+								try
+								{
+									if(e3.Message.Contains("Microsoft.Exchange.WebServices.Data.ExchangeVersion"))
+									{
+										service = new ExchangeService(ExchangeVersion.Exchange2010_SP2,mawson);
+										service.EnableScpLookup = false;
+										service.Credentials = new WebCredentials(username,password);
+										service.AutodiscoverUrl(username,RedirectionUrlValidationCallback);
+										SearchFilter searchFilter = new SearchFilter.IsEqualTo(FolderSchema.DisplayName,"Inbox");
+										FindFoldersResults f = service.FindFolders(WellKnownFolderName.MsgFolderRoot,searchFilter,new FolderView(1));																								
+									}
+									else
+									{
+										passPreReq=false;
+										Console.WriteLine("Incorrect username or password");
+									}							
 								}catch(Exception e4)
 								{
 									try
 									{
-										service = new ExchangeService(ExchangeVersion.Exchange2010_SP1,mawson);
-										service.EnableScpLookup = false;
-										service.Credentials = new WebCredentials(username,password);
-										service.AutodiscoverUrl(username,RedirectionUrlValidationCallback);
-										SearchFilter searchFilter = new SearchFilter.IsEqualTo(FolderSchema.DisplayName,"Inbox");
-										FindFoldersResults f = service.FindFolders(WellKnownFolderName.MsgFolderRoot,searchFilter,new FolderView(1));																																	
+										if(e4.Message.Contains("Microsoft.Exchange.WebServices.Data.ExchangeVersion"))
+										{
+											service = new ExchangeService(ExchangeVersion.Exchange2010_SP1,mawson);
+											service.EnableScpLookup = false;
+											service.Credentials = new WebCredentials(username,password);
+											service.AutodiscoverUrl(username,RedirectionUrlValidationCallback);
+											SearchFilter searchFilter = new SearchFilter.IsEqualTo(FolderSchema.DisplayName,"Inbox");
+											FindFoldersResults f = service.FindFolders(WellKnownFolderName.MsgFolderRoot,searchFilter,new FolderView(1));																																	
+										}
 									}catch(Exception e5)
 									{
-										service = new ExchangeService(ExchangeVersion.Exchange2010,mawson);
-										service.EnableScpLookup = false;
-										service.Credentials = new WebCredentials(username,password);
-										service.AutodiscoverUrl(username,RedirectionUrlValidationCallback);
-										SearchFilter searchFilter = new SearchFilter.IsEqualTo(FolderSchema.DisplayName,"Inbox");
-										FindFoldersResults f = service.FindFolders(WellKnownFolderName.MsgFolderRoot,searchFilter,new FolderView(1));																																											
+										if(e5.Message.Contains("Microsoft.Exchange.WebServices.Data.ExchangeVersion"))
+										{
+											service = new ExchangeService(ExchangeVersion.Exchange2010,mawson);
+											service.EnableScpLookup = false;
+											service.Credentials = new WebCredentials(username,password);
+											service.AutodiscoverUrl(username,RedirectionUrlValidationCallback);
+											SearchFilter searchFilter = new SearchFilter.IsEqualTo(FolderSchema.DisplayName,"Inbox");
+											FindFoldersResults f = service.FindFolders(WellKnownFolderName.MsgFolderRoot,searchFilter,new FolderView(1));																																											
+										}
+										else
+										{
+											passPreReq=false;
+											Console.WriteLine("Incorrect username or password");
+										}							
 									}
 								}
 								
@@ -177,103 +214,101 @@ namespace test2
 						}
 					}
 				}
-				int i=1;
-				if(options.verbose)
+				if(passPreReq==true)
 				{
-					service.TraceEnabled = true;
-					service.TraceFlags = TraceFlags.All;
-				}
-				List<SearchFilter> searchFilterCollection = new List<SearchFilter>();
-				if(options.searchText!=null)
-				{
-					searchFilterCollection.Add(new SearchFilter.SearchFilterCollection(LogicalOperator.Or, new SearchFilter.ContainsSubstring(ItemSchema.Body,options.searchText,ContainmentMode.Substring,ComparisonMode.IgnoreCase)));
-				}
-				else
-				{
-					if(options.pan==false)
+					int i=1;
+					if(options.verbose)
 					{
-						searchFilterCollection.Add(new SearchFilter.SearchFilterCollection(LogicalOperator.Or, new SearchFilter.ContainsSubstring(ItemSchema.Body,"password",ContainmentMode.Substring,ComparisonMode.IgnoreCase)));
-						searchFilterCollection.Add(new SearchFilter.SearchFilterCollection(LogicalOperator.Or, new SearchFilter.ContainsSubstring(ItemSchema.Body,"creds",ContainmentMode.Substring,ComparisonMode.IgnoreCase)));
-						searchFilterCollection.Add(new SearchFilter.SearchFilterCollection(LogicalOperator.Or, new SearchFilter.ContainsSubstring(ItemSchema.Body,"credentials",ContainmentMode.Substring,ComparisonMode.IgnoreCase)));
-						searchFilterCollection.Add(new SearchFilter.SearchFilterCollection(LogicalOperator.Or, new SearchFilter.ContainsSubstring(ItemSchema.Body,"ssn",ContainmentMode.Substring,ComparisonMode.IgnoreCase)));
-						searchFilterCollection.Add(new SearchFilter.SearchFilterCollection(LogicalOperator.Or, new SearchFilter.ContainsSubstring(ItemSchema.Body,"credit card",ContainmentMode.Substring,ComparisonMode.IgnoreCase)));
+						service.TraceEnabled = true;
+						service.TraceFlags = TraceFlags.All;
+					}
+					List<SearchFilter> searchFilterCollection = new List<SearchFilter>();
+					if(options.searchText!=null)
+					{
+						searchFilterCollection.Add(new SearchFilter.SearchFilterCollection(LogicalOperator.Or, new SearchFilter.ContainsSubstring(ItemSchema.Body,options.searchText,ContainmentMode.Substring,ComparisonMode.IgnoreCase)));
 					}
 					else
 					{
-						//Iterate through each mail in Inbox
-						Folder inbox = Folder.Bind(service, WellKnownFolderName.Inbox);
-						ItemView view = new ItemView(100);
-						FindItemsResults<Item> findResults2;
-						do
+						if(options.pan==false)
 						{
-							findResults2 = service.FindItems(WellKnownFolderName.Inbox,view);
-							foreach(var item in findResults2.Items)
+							searchFilterCollection.Add(new SearchFilter.SearchFilterCollection(LogicalOperator.Or, new SearchFilter.ContainsSubstring(ItemSchema.Body,"password",ContainmentMode.Substring,ComparisonMode.IgnoreCase)));
+							searchFilterCollection.Add(new SearchFilter.SearchFilterCollection(LogicalOperator.Or, new SearchFilter.ContainsSubstring(ItemSchema.Body,"creds",ContainmentMode.Substring,ComparisonMode.IgnoreCase)));
+							searchFilterCollection.Add(new SearchFilter.SearchFilterCollection(LogicalOperator.Or, new SearchFilter.ContainsSubstring(ItemSchema.Body,"credentials",ContainmentMode.Substring,ComparisonMode.IgnoreCase)));
+							searchFilterCollection.Add(new SearchFilter.SearchFilterCollection(LogicalOperator.Or, new SearchFilter.ContainsSubstring(ItemSchema.Body,"ssn",ContainmentMode.Substring,ComparisonMode.IgnoreCase)));
+							searchFilterCollection.Add(new SearchFilter.SearchFilterCollection(LogicalOperator.Or, new SearchFilter.ContainsSubstring(ItemSchema.Body,"credit card",ContainmentMode.Substring,ComparisonMode.IgnoreCase)));
+						}
+						else
+						{
+							//Iterate through each mail in Inbox
+							Folder inbox = Folder.Bind(service, WellKnownFolderName.Inbox);
+							ItemView view = new ItemView(100);
+							FindItemsResults<Item> findResults2;
+							do
 							{
-								PropertySet props2 = new PropertySet(EmailMessageSchema.Body);
-								var email2 = EmailMessage.Bind(service, item.Id, props2);
-								string sPattern = "\b4[0-9]{12}(?:[0-9]{3})?\b";
-								//string sPattern = "^5[1-5][0-9]{14}$";
-								//string sPattern = "[pP]assword";
-
-								if(email2.Body.Text.Length>0)
+								findResults2 = service.FindItems(WellKnownFolderName.Inbox,view);
+								foreach(var item in findResults2.Items)
 								{
-									
-									if(Regex.IsMatch(email2.Body.Text,sPattern))
-									{
-										Console.WriteLine("\n[PAN] PAN Number found in: "+filename[0]+"_"+"Inbox"+i+".eml");
+									PropertySet props2 = new PropertySet(EmailMessageSchema.Body);
+									var email2 = EmailMessage.Bind(service, item.Id, props2);
+									string sPattern = "\b4[0-9]{12}(?:[0-9]{3})?\b";
+									//string sPattern = "^5[1-5][0-9]{14}$";
+									//string sPattern = "[pP]assword";
 	
-										string emlFilename = @filename[0]+"_"+"Inbox"+i+".eml";
-										++i;
-										PropertySet props = new PropertySet(EmailMessageSchema.MimeContent);
-										var email = EmailMessage.Bind(service, item.Id, props);
+									if(email2.Body.Text.Length>0)
+									{
 										
-										using (FileStream fs = new FileStream(emlFilename, FileMode.Create, FileAccess.Write))
+										if(Regex.IsMatch(email2.Body.Text,sPattern))
 										{
-											fs.Write(email.MimeContent.Content,0,email.MimeContent.Content.Length);
-										}
-										
-										++i;
-									}
-								}
-								Console.Write(".");	
-							}
-							view.Offset = findResults2.NextPageOffset.Value;
-						}while(findResults2.MoreAvailable);
-					}					
-					if(options.pan==false)
-					{
-						SearchFilter searchFilter = new SearchFilter.SearchFilterCollection(LogicalOperator.Or,searchFilterCollection.ToArray());
-			
-						//Inbox					
-						FindItemsResults<Item> findResults = service.FindItems(
-							WellKnownFolderName.Inbox,
-							searchFilter,
-							new ItemView(999));
+											Console.WriteLine("\n[PAN] PAN Number found in: "+filename[0]+"_"+"Inbox"+i+".eml");
 		
-						foreach (var item in findResults)
+											string emlFilename = @filename[0]+"_"+"Inbox"+i+".eml";
+											++i;
+											PropertySet props = new PropertySet(EmailMessageSchema.MimeContent);
+											var email = EmailMessage.Bind(service, item.Id, props);
+											
+											using (FileStream fs = new FileStream(emlFilename, FileMode.Create, FileAccess.Write))
+											{
+												fs.Write(email.MimeContent.Content,0,email.MimeContent.Content.Length);
+											}
+											
+											++i;
+										}
+									}
+									Console.Write(".");	
+								}
+								view.Offset = findResults2.NextPageOffset.Value;
+							}while(findResults2.MoreAvailable);
+						}					
+						if(options.pan==false)
 						{
-							Console.WriteLine("[Subject]: "+item.Subject);
-							//Console.WriteLine(item.HasAttachments);
-							string emlFilename = @filename[0]+"_"+"Inbox"+i+".eml";
-							++i;
-							PropertySet props = new PropertySet(EmailMessageSchema.MimeContent);
-							var email = EmailMessage.Bind(service, item.Id, props);
-							
-							using (FileStream fs = new FileStream(emlFilename, FileMode.Create, FileAccess.Write))
-							{
-								fs.Write(email.MimeContent.Content,0,email.MimeContent.Content.Length);
-							}
-						}		
-					}
-				}			
-			}
+							SearchFilter searchFilter = new SearchFilter.SearchFilterCollection(LogicalOperator.Or,searchFilterCollection.ToArray());
+				
+							//Inbox					
+							FindItemsResults<Item> findResults = service.FindItems(
+								WellKnownFolderName.Inbox,
+								searchFilter,
+								new ItemView(999));
 			
-			//Console.Write("Press any key to continue . . . ");
-			//Console.ReadKey(true);
+							foreach (var item in findResults)
+							{
+								Console.WriteLine("[Subject]: "+item.Subject);
+								//Console.WriteLine(item.HasAttachments);
+								string emlFilename = @filename[0]+"_"+"Inbox"+i+".eml";
+								++i;
+								PropertySet props = new PropertySet(EmailMessageSchema.MimeContent);
+								var email = EmailMessage.Bind(service, item.Id, props);
+								
+								using (FileStream fs = new FileStream(emlFilename, FileMode.Create, FileAccess.Write))
+								{
+									fs.Write(email.MimeContent.Content,0,email.MimeContent.Content.Length);
+								}
+							}		
+						}
+					}	
+		    	}
+			}
 		}
-		private static void downloadAttachments()
-		{
-		}
+
 		private static bool CertificateValidationCallback(
 			object sender, 
 			System.Security.Cryptography.X509Certificates.X509Certificate certificate,
