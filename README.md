@@ -1,7 +1,7 @@
 # owaDump
 Search Email Accounts (OWA) for Passwords, PAN numbers as well as other Keywords
   
-* Features *  
+Features  
 - Multithreading 
 - Search for sensitive keywords  
 - Search for PAN numbers  
